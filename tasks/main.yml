@@ -1,0 +1,27 @@
+- name: install docker
+  yum: name=docker
+- name: install docker-py for use docker_image module
+  yum: name=python-docker-py
+- name: start docker
+  service: name=docker state=started
+- name: get base image
+  docker_image: name={{ pull_image_name }} tag={{ pull_image_tag }}
+- name: send Dockerfile
+  template: src=Dockerfile dest={{ dockerfile_dir }}
+- name: check docker image exists
+  shell: docker images | grep {{ build_image_name }}
+  register: image_result
+  changed_when: false
+  ignore_errors: true
+- name: build docker image
+  command: docker build --rm -t {{ build_image_name}} {{ dockerfile_dir }}
+  when: image_result.stdout.find(build_image_name) == -1
+- name: check docker container exists
+  shell: docker ps -a | grep {{ container_name }}
+  register: container_result
+  changed_when: false
+  ignore_errors: true
+- name: run container
+  command:  docker run -d -v /sys/fs/cgroup:/sys/fs/cgroup:ro {{ port_mapping}}  --name {{ container_name}} {{build_image_name }}
+  when: container_result.stdout.find(container_name) == -1
+
