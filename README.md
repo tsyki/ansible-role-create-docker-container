@@ -5,6 +5,10 @@ Create docker container
 * Create image that enable ssh
 * Run container
 
+After you run the playbook , you can connect to the container with the following command.
+
+    ssh  -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no docker@docker_host -p 50001
+
 Requirements
 ------------
 
